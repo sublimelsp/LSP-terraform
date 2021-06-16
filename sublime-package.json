@@ -1,0 +1,81 @@
+{
+    "contributions": {
+        "settings": [
+            {
+                "file_patterns": [
+                    "/LSP-terraform.sublime-settings"
+                ],
+                "schema": {
+                    "$id": "sublime://settings/LSP-terraform",
+                    "definitions": {
+                        "PluginConfig": {
+                            "properties": {
+                                "initializationOptions": {
+                                    "additionalProperties": false,
+                                    "type": "object",
+                                    "properties": {
+                                        "terraform-ls.excludeRootModules": {
+                                            "default": [],
+                                            "description": "Per-workspace list of module directories for the language server to exclude",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "type": "array"
+                                        },
+                                        "terraform-ls.experimentalFeatures": {
+                                            "description": "Experimental (opt-in) terraform-ls features",
+                                            "properties": {
+                                                "validateOnSave": {
+                                                    "default": false,
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "terraform-ls.rootModules": {
+                                            "default": [],
+                                            "description": "Per-workspace list of module directories for the language server to read",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "type": "array"
+                                        },
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "allOf": [
+                        {
+                            "$ref": "sublime://settings/LSP-plugin-base"
+                        },
+                        {
+                            "$ref": "sublime://settings/LSP-terraform#/definitions/PluginConfig"
+                        }
+                    ]
+                }
+            },
+            {
+                "file_patterns": [
+                    "/*.sublime-project"
+                ],
+                "schema": {
+                    "properties": {
+                        "settings": {
+                            "properties": {
+                                "LSP": {
+                                    "properties": {
+                                        "terraform": {
+                                            "$ref": "sublime://settings/LSP-terraform#/definitions/PluginConfig"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

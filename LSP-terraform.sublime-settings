@@ -1,0 +1,16 @@
+// Packages/User/LSP-terraform.sublime-settings
+{
+  "command": [
+    "terraform-ls",
+    "serve"
+  ],
+  "selector": "source.terraform",
+  "initializationOptions": {
+    // Per-workspace list of module directories for the language server to exclude
+    "terraform-ls.excludeRootModules": [],
+    // Experimental (opt-in) terraform-ls features
+    "terraform-ls.experimentalFeatures": {},
+    // Per-workspace list of module directories for the language server to read
+    "terraform-ls.rootModules": [],
+  }
+}
