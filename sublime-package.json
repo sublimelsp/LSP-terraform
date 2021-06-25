@@ -14,31 +14,26 @@
                                     "additionalProperties": false,
                                     "type": "object",
                                     "properties": {
-                                        "terraform-ls.excludeRootModules": {
+                                        "rootModulePaths": {
                                             "default": [],
-                                            "description": "Per-workspace list of module directories for the language server to exclude",
+                                            "markdownDescription": "This allows overriding automatic root module discovery by passing a static list of absolute or relative paths to root modules (i.e. folders with `*.tf` files which have been `terraform init`-ed). Conflicts with `excludeModulePaths` option.\n\nRelative paths are resolved relative to the directory opened in the editor.\n\nPath separators are converted automatically to the match separators of the target platform (e.g. `\\` on Windows, or `/` on Unix), symlinks are followed, trailing slashes automatically removed, and `~` is replaced with your home directory.",
                                             "items": {
                                                 "type": "string"
                                             },
                                             "type": "array"
                                         },
-                                        "terraform-ls.experimentalFeatures": {
-                                            "description": "Experimental (opt-in) terraform-ls features",
-                                            "properties": {
-                                                "validateOnSave": {
-                                                    "default": false,
-                                                    "type": "boolean"
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
-                                        "terraform-ls.rootModules": {
+                                        "excludeModulePaths": {
                                             "default": [],
-                                            "description": "Per-workspace list of module directories for the language server to read",
+                                            "markdownDescription": "This allows exclude root module path when automatic root module discovery by passing a static list of absolute or relative paths to root modules (i.e. folders with `*.tf` files which have been `terraform init`-ed). Conflicts with `rootModulePaths` option.\n\n Relative paths are resolved relative to the directory opened in the editor.\n\n Path separators are converted automatically to the match separators of the target platform (e.g. `\\` on Windows, or `/` on Unix), symlinks are followed, trailing slashes automatically removed, and `~` is replaced with your home directory.",
                                             "items": {
                                                 "type": "string"
                                             },
                                             "type": "array"
+                                        },
+                                        "experimentalFeatures.validateOnSave": {
+                                            "markdownDescription": "Enabling this feature will run terraform validate within the folder of the file saved. This comes with some user experience caveats.\n\n- Validation is not run on file open, only once it's saved.\n- When editing a module file, validation is not run due to not knowing which \"rootmodule\" to run validation from (there could be multiple). This creates an awkward workflow where when saving a file in a rootmodule, a diagnostic is raised in a module file. Editing the module file will not clear the diagnostic for the reason mentioned above, it will only clear once a file is saved back in the original \"rootmodule\".",
+                                            "default": false,
+                                            "type": "boolean"
                                         },
                                     }
                                 },
