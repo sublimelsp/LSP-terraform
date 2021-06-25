@@ -4,7 +4,7 @@
     "terraform-ls",
     "serve"
   ],
-  "selector": "source.terraform",
+  "selector": "source.terraform | source.terraform-vars",
   "initializationOptions": {
     // Overrides automatic root module discovery by passing a static list of
     // absolute or relative paths to root modules.
