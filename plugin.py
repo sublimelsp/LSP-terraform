@@ -17,8 +17,8 @@ USER_AGENT = 'Sublime Text LSP'
 
 TAG = '0.23.0'
 
-HASHICORP_RELEASES_BASE = 'https://releases.hashicorp.com/terraform-ls/{tag}/terraform-ls{tag}_{platform}_{arch}.zip'
-HASHICORP_SHA256_BASE = 'https://releases.hashicorp.com/terraform-ls/{tag}/terraform-ls_{tag}_SHA256SUM'
+HASHICORP_RELEASES_BASE = 'https://releases.hashicorp.com/terraform-ls/{tag}/terraform-ls_{tag}_{platform}_{arch}.zip'
+HASHICORP_SHA256_BASE = 'https://releases.hashicorp.com/terraform-ls/{tag}/terraform-ls_{tag}_SHA256SUMS'
 HASHICORP_FILENAME_BASE = 'terraform-ls_{tag}_{platform}_{arch}.zip'
 
 
@@ -115,7 +115,8 @@ class Terraform(AbstractPlugin):
             version = cls.server_version()
             zip_url = HASHICORP_RELEASES_BASE.format(
                 tag=TAG, arch=arch(), platform=plat())
-            zip_file = os.path.join(cls.basedir(), HASHICORP_FILENAME_BASE.format(tag=TAG, platform=plat(), arch=arch()))
+            zip_file = os.path.join(cls.basedir(), HASHICORP_FILENAME_BASE.format(
+                tag=TAG, platform=plat(), arch=arch()))
 
             sha_url = HASHICORP_SHA256_BASE.format(tag=TAG)
             sha_file = os.path.join(cls.basedir(), 'terraform-ls.sha')
@@ -141,18 +142,34 @@ class Terraform(AbstractPlugin):
             with urllib.request.urlopen(req) as fp:
                 with open(sha_file, "wb") as f:
                     f.write(fp.read())
-            
-            sha256_hash_computed = hashlib.sha256()
-            with open(sha_file,"rb") as fp:
-                for byte_block in iter(lambda: fp.read(4096),b""):
-                    sha256_hash_computed.update(byte_block)
+
+            sha256_hash_computed = None
+            with open(zip_file,"rb") as f:
+                file_bytes = f.read()
+                sha256_hash_computed = hashlib.sha256(file_bytes).hexdigest();
+
+            with open(sha_file) as fp:
+                while True:
+                    line = fp.readline()
+                    if not line:
+                        raise ValueError('unable to compare sha256 values')
+                    value, key = line.split('  ')
+                    if key.strip() != HASHICORP_FILENAME_BASE.format(tag=TAG, platform=plat(), arch=arch()):
+                        continue
+
+                    if value != sha256_hash_computed:
+                        raise ValueError('sha256 mismatch', 'original hash:', value, 'computed hash:', sha256_hash_computed)
+                    break
 
             with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-                zip_ref.extractall(cls.basedir)
+                zip_ref.extractall(cls.basedir())
 
             os.remove(zip_file)
             os.remove(sha_file)
-            os.chmod('', 0o700)
+
+            terraform_ls = 'terraform-ls' if plat() != 'windows' else 'terraform-ls.exe'
+
+            os.chmod(os.path.join(cls.basedir(), terraform_ls), 0o700)
 
             with open(os.path.join(cls.basedir(), 'VERSION'), 'w') as fp:
                 fp.write(version)
@@ -164,6 +181,16 @@ class Terraform(AbstractPlugin):
 
 def _is_binary_available(path) -> bool:
     return bool(shutil.which(path))
+
+
+def sha256sum(filename):
+    h = hashlib.sha256()
+    b = bytearray(128*1024)
+    mv = memoryview(b)
+    with open(filename, 'rb', buffering=0) as f:
+        for n in iter(lambda: f.readinto(mv), 0):
+            h.update(mv[:n])
+    return h.hexdigest()
 
 
 def get_setting(key: str, default=None) -> Any:

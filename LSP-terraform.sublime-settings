@@ -1,7 +1,7 @@
 // Packages/User/LSP-terraform.sublime-settings
 {
   "command": [
-    "terraform-ls",
+    "${storage_path}/LSP-terraform/terraform-ls",
     "serve"
   ],
   "selector": "source.terraform | source.terraform-vars",
