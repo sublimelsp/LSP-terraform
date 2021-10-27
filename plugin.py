@@ -3,46 +3,70 @@
 import sublime
 
 from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
-from LSP.plugin.core.typing import Any
+from LSP.plugin.core.typing import Any, Optional
 
 import os
 import sys
 import shutil
-import gzip
+import zipfile
 import urllib.request
-import json
+import platform
+import hashlib
 
-TAG = 'v0.23.0'
-GITHUB_RELEASE_API = 'https://api.github.com/repos/hashicorp/terraform-ls/releases'
-GITHUB_RELEASE_DOWNLOAD_BASE = 'https://github.com/hashicorp/terraform-ls/releases/download/{tag}/terraform-ls_{tag}_{platform}_{arch}.zip'
+USER_AGENT = 'Sublime Text LSP'
+
+TAG = '0.23.0'
+
+HASHICORP_RELEASES_BASE = 'https://releases.hashicorp.com/terraform-ls/{tag}/terraform-ls{tag}_{platform}_{arch}.zip'
+HASHICORP_SHA256_BASE = 'https://releases.hashicorp.com/terraform-ls/{tag}/terraform-ls_{tag}_SHA256SUM'
+HASHICORP_FILENAME_BASE = 'terraform-ls_{tag}_{platform}_{arch}.zip'
 
 
-def platform() -> str:
-    os_platform = sys.platform
-    if os_platform == "windows":
-        return "windows"
-    elif os_platform == "darwin":
-        return "darwin"
-    elif os_platform == "linux":
-        return "linux"
-    elif os_platform == "freebsd8":
-        return "freebsd8"
+def plat() -> Optional[str]:
+    '''
+    Returns the user friendly platform version that
+    sublime is running on.
+    '''
+    if platform.system() == 'Darwin':
+        return 'darwin'
+    elif platform.system() == 'Linux':
+        return 'linux'
+    elif platform.system() == 'Windows':
+        return 'windows'
+    elif sys.platform.startswith('freebsd'):
+        return 'freebsd'
+    elif sys.platform.startswith('dragonfly'):
+        return 'dragonfly'
+    elif sys.platform.startswith('netbsd'):
+        return 'netbsd'
+    elif sys.platform.startswith('openbsd'):
+        return 'openbsd'
     else:
-        return "unknown-platform"
+        return None
 
 
-def arch() -> str:
-    if sublime.arch() == "x32":
-        return "x32"
-    elif sublime.arch() == "x64":
-        return "x64"
-    elif sublime.arch() == "arm64":
+def arch() -> Optional[str]:
+    '''
+    Returns the user friendly architecture version that
+    sublime is running on.
+    '''
+    os_arch = sublime.arch()
+    if os_arch == "x32":
+        return "386"
+    elif os_arch == "x64":
+        return "amd64"
+    elif os_arch == "arm64":
         return "arm64"
     else:
-        return "unknown-arch"
+        return None
 
 
 class Terraform(AbstractPlugin):
+    '''
+    Terraform is an AbstractPlugin implementation that provides
+    the required functions to act as a helper package for the
+    Terraform Language Server (terraform-ls)
+    '''
 
     @classmethod
     def name(cls):
@@ -57,9 +81,12 @@ class Terraform(AbstractPlugin):
         return TAG
 
     @classmethod
-    def current_server_version(cls) -> str:
-        with open(os.path.join(cls.basedir(), "VERSION"), "r") as fp:
-            return fp.read()
+    def current_server_version(cls) -> Optional[str]:
+        try:
+            with open(os.path.join(cls.basedir(), "VERSION"), "r") as fp:
+                return fp.read()
+        except:
+            return None
 
     @classmethod
     def _is_terraform_ls_installed(cls) -> bool:
@@ -69,41 +96,71 @@ class Terraform(AbstractPlugin):
 
     @classmethod
     def needs_update_or_installation(cls) -> bool:
-        try:
-            return not cls._is_terraform_ls_installed() or (cls.current_server_version() != cls.server_version())
-        except OSError:
-            return True
+        return not cls._is_terraform_ls_installed() or (cls.current_server_version() != cls.server_version())
 
     @classmethod
     def install_or_update(cls) -> None:
+        if plat() is None:
+            raise ValueError('System platform not detected or supported')
+
+        if arch() is None:
+            raise ValueError('System architecture not detected or supported')
+
         try:
             if os.path.isdir(cls.basedir()):
                 shutil.rmtree(cls.basedir())
+
             os.makedirs(cls.basedir(), exist_ok=True)
+
             version = cls.server_version()
-            url = GITHUB_RELEASE_DOWNLOAD_BASE.format(
-                tag=TAG, arch=arch(), platform=platform())
-            gzipfile = os.path.join(cls.basedir(), "terraform-ls.gz")
-            serverfile = os.path.join(
-                cls.basedir(),
-                "terraform-ls.exe" if sublime.platform() == "windows" else "terraform-ls"
+            zip_url = HASHICORP_RELEASES_BASE.format(
+                tag=TAG, arch=arch(), platform=plat())
+            zip_file = os.path.join(cls.basedir(), HASHICORP_FILENAME_BASE.format(tag=TAG, platform=plat(), arch=arch()))
+
+            sha_url = HASHICORP_SHA256_BASE.format(tag=TAG)
+            sha_file = os.path.join(cls.basedir(), 'terraform-ls.sha')
+
+            req = urllib.request.Request(
+                zip_url,
+                data=None,
+                headers={
+                    'User-Agent': USER_AGENT
+                }
             )
-            with urllib.request.urlopen(url) as fp:
-                with open(gzipfile, "wb") as f:
+            with urllib.request.urlopen(req) as fp:
+                with open(zip_file, "wb") as f:
                     f.write(fp.read())
 
-            with gzip.open(gzipfile, "rb") as fp:
-                with open(serverfile, "wb") as f:
+            req = urllib.request.Request(
+                sha_url,
+                data=None,
+                headers={
+                    'User-Agent': USER_AGENT
+                }
+            )
+            with urllib.request.urlopen(req) as fp:
+                with open(sha_file, "wb") as f:
                     f.write(fp.read())
+            
+            sha256_hash_computed = hashlib.sha256()
+            with open(sha_file,"rb") as fp:
+                for byte_block in iter(lambda: fp.read(4096),b""):
+                    sha256_hash_computed.update(byte_block)
 
-            os.remove(gzipfile)
-            os.chmod(serverfile, 0o744)
+            with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+                zip_ref.extractall(cls.basedir)
 
-            with open(os.path.join(cls.basedir(), "VERSION"), "w") as fp:
+            os.remove(zip_file)
+            os.remove(sha_file)
+            os.chmod('', 0o700)
+
+            with open(os.path.join(cls.basedir(), 'VERSION'), 'w') as fp:
                 fp.write(version)
+
         except Exception:
             shutil.rmtree(cls.basedir(), ignore_errors=True)
             raise
+
 
 def _is_binary_available(path) -> bool:
     return bool(shutil.which(path))
