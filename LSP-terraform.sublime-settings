@@ -16,5 +16,8 @@
     "excludeModulePaths": [],
     // Runs terraform validate within the folder of the file saved.
     "experimentalFeatures.validateOnSave": false,
+    // Enables advanced completion for `provider`, `resource`, and `data`
+    // blocks where any required fields for that block are pre-filled.
+    "experimentalFeatures.prefillRequiredFields": false,
   }
 }
