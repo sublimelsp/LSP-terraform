@@ -27,20 +27,19 @@ def plat() -> Optional[str]:
     Returns the user friendly platform version that
     sublime is running on.
     '''
-    if platform.system() == 'Darwin':
+    if sublime.platform() == 'osx':
         return 'darwin'
-    elif platform.system() == 'Linux':
-        return 'linux'
-    elif platform.system() == 'Windows':
+    elif sublime.platform() == 'windows':
         return 'windows'
-    elif sys.platform.startswith('freebsd'):
-        return 'freebsd'
-    elif sys.platform.startswith('dragonfly'):
-        return 'dragonfly'
-    elif sys.platform.startswith('netbsd'):
-        return 'netbsd'
-    elif sys.platform.startswith('openbsd'):
-        return 'openbsd'
+    elif sublime.platform() == 'linux':
+        if platform.system() == 'Linux':
+            return 'linux'
+        elif sys.platform.startswith('freebsd'):
+            return 'freebsd'
+        elif sys.platform.startswith('openbsd'):
+            return 'openbsd'
+        else:
+            return None
     else:
         return None
 
@@ -50,12 +49,11 @@ def arch() -> Optional[str]:
     Returns the user friendly architecture version that
     sublime is running on.
     '''
-    os_arch = sublime.arch()
-    if os_arch == "x32":
+    if sublime.arch() == "x32":
         return "386"
-    elif os_arch == "x64":
+    elif sublime.arch() == "x64":
         return "amd64"
-    elif os_arch == "arm64":
+    elif sublime.arch() == "arm64":
         return "arm64"
     else:
         return None
@@ -69,7 +67,7 @@ class Terraform(AbstractPlugin):
     '''
 
     @classmethod
-    def name(cls):
+    def name(cls) -> str:
         return "terraform"
 
     @classmethod
@@ -77,7 +75,7 @@ class Terraform(AbstractPlugin):
         return os.path.join(cls.storage_path(), __package__)
 
     @classmethod
-    def server_version(cls):
+    def server_version(cls) -> str:
         return TAG
 
     @classmethod
@@ -106,91 +104,69 @@ class Terraform(AbstractPlugin):
         if arch() is None:
             raise ValueError('System architecture not detected or supported')
 
-        try:
-            if os.path.isdir(cls.basedir()):
-                shutil.rmtree(cls.basedir())
+        os.makedirs(cls.basedir(), exist_ok=True)
 
-            os.makedirs(cls.basedir(), exist_ok=True)
+        zip_url = HASHICORP_RELEASES_BASE.format(
+            tag=cls.server_version(), arch=arch(), platform=plat())
+        zip_file = os.path.join(cls.basedir(), HASHICORP_FILENAME_BASE.format(
+            tag=cls.server_version(), platform=plat(), arch=arch()))
+        sha_url = HASHICORP_SHA256_BASE.format(tag=cls.server_version())
 
-            version = cls.server_version()
-            zip_url = HASHICORP_RELEASES_BASE.format(
-                tag=TAG, arch=arch(), platform=plat())
-            zip_file = os.path.join(cls.basedir(), HASHICORP_FILENAME_BASE.format(
-                tag=TAG, platform=plat(), arch=arch()))
+        sha_file = os.path.join(cls.basedir(), 'terraform-ls.sha')
 
-            sha_url = HASHICORP_SHA256_BASE.format(tag=TAG)
-            sha_file = os.path.join(cls.basedir(), 'terraform-ls.sha')
+        req = urllib.request.Request(
+            zip_url,
+            data=None,
+            headers={
+                'User-Agent': USER_AGENT
+            }
+        )
+        with urllib.request.urlopen(req) as fp:
+            with open(zip_file, "wb") as f:
+                f.write(fp.read())
 
-            req = urllib.request.Request(
-                zip_url,
-                data=None,
-                headers={
-                    'User-Agent': USER_AGENT
-                }
-            )
-            with urllib.request.urlopen(req) as fp:
-                with open(zip_file, "wb") as f:
-                    f.write(fp.read())
+        req = urllib.request.Request(
+            sha_url,
+            data=None,
+            headers={
+                'User-Agent': USER_AGENT
+            }
+        )
+        with urllib.request.urlopen(req) as fp:
+            with open(sha_file, "wb") as f:
+                f.write(fp.read())
 
-            req = urllib.request.Request(
-                sha_url,
-                data=None,
-                headers={
-                    'User-Agent': USER_AGENT
-                }
-            )
-            with urllib.request.urlopen(req) as fp:
-                with open(sha_file, "wb") as f:
-                    f.write(fp.read())
+        sha256_hash_computed = None
+        with open(zip_file, "rb") as f:
+            file_bytes = f.read()
+            sha256_hash_computed = hashlib.sha256(file_bytes).hexdigest()
 
-            sha256_hash_computed = None
-            with open(zip_file,"rb") as f:
-                file_bytes = f.read()
-                sha256_hash_computed = hashlib.sha256(file_bytes).hexdigest();
+        with open(sha_file) as fp:
+            for line in fp:
+                sha256sum, filename = line.split('  ')
+                if filename.strip() != HASHICORP_FILENAME_BASE.format(tag=TAG, platform=plat(), arch=arch()):
+                    continue
 
-            with open(sha_file) as fp:
-                while True:
-                    line = fp.readline()
-                    if not line:
-                        raise ValueError('unable to compare sha256 values')
-                    value, key = line.split('  ')
-                    if key.strip() != HASHICORP_FILENAME_BASE.format(tag=TAG, platform=plat(), arch=arch()):
-                        continue
+                if sha256sum.strip() != sha256_hash_computed:
+                    raise ValueError(
+                        'sha256 mismatch', 'original hash:', sha256sum, 'computed hash:', sha256_hash_computed)
+                break
 
-                    if value != sha256_hash_computed:
-                        raise ValueError('sha256 mismatch', 'original hash:', value, 'computed hash:', sha256_hash_computed)
-                    break
+        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+            zip_ref.extractall(cls.basedir())
 
-            with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-                zip_ref.extractall(cls.basedir())
+        os.remove(zip_file)
+        os.remove(sha_file)
 
-            os.remove(zip_file)
-            os.remove(sha_file)
+        terraform_ls = 'terraform-ls' if plat() != 'windows' else 'terraform-ls.exe'
+        os.chmod(os.path.join(cls.basedir(), terraform_ls), 0o700)
 
-            terraform_ls = 'terraform-ls' if plat() != 'windows' else 'terraform-ls.exe'
-
-            os.chmod(os.path.join(cls.basedir(), terraform_ls), 0o700)
-
-            with open(os.path.join(cls.basedir(), 'VERSION'), 'w') as fp:
-                fp.write(version)
-
-        except Exception:
-            shutil.rmtree(cls.basedir(), ignore_errors=True)
-            raise
+        with open(os.path.join(cls.basedir(), 'VERSION'), 'w') as fp:
+            fp.write(cls.server_version())
 
 
 def _is_binary_available(path) -> bool:
     return bool(shutil.which(path))
-
-
-def sha256sum(filename):
-    h = hashlib.sha256()
-    b = bytearray(128*1024)
-    mv = memoryview(b)
-    with open(filename, 'rb', buffering=0) as f:
-        for n in iter(lambda: f.readinto(mv), 0):
-            h.update(mv[:n])
-    return h.hexdigest()
 
 
 def get_setting(key: str, default=None) -> Any:
