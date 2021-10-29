@@ -14,6 +14,21 @@
                                     "additionalProperties": false,
                                     "type": "object",
                                     "properties": {
+                                        "terraformLogFilePath": {
+                                            "markdownDescription": "Path to a file for Terraform executions to be logged into (`TF_LOG_PATH`) with support for variables (e.g. Timestamp, Pid, Ppid) via Go template",
+                                            "default": "",
+                                            "type": "string"
+                                        },
+                                        "terraformExecTimeout": {
+                                            "markdownDescription": "Overrides Terraform execution timeout in [`time.ParseDuration`](https://pkg.go.dev/time#ParseDuration) compatible format (e.g. `30s`)",
+                                            "default": "",
+                                            "type": "string"
+                                        },
+                                        "terraformExecPath": {
+                                            "markdownDescription": "Path to the Terraform binary.\n\nThis is usually looked up automatically from `$PATH` and should not need to be specified in majority of cases. Use this to override the automatic lookup.",
+                                            "default": "",
+                                            "type": "string"
+                                        },
                                         "rootModulePaths": {
                                             "default": [],
                                             "markdownDescription": "This allows overriding automatic root module discovery by passing a static list of absolute or relative paths to root modules (i.e. folders with `*.tf` files which have been `terraform init`-ed). Conflicts with `excludeModulePaths` option.\n\nRelative paths are resolved relative to the directory opened in the editor.\n\nPath separators are converted automatically to the match separators of the target platform (e.g. `\\` on Windows, or `/` on Unix), symlinks are followed, trailing slashes automatically removed, and `~` is replaced with your home directory.",
@@ -31,7 +46,12 @@
                                             "type": "array"
                                         },
                                         "experimentalFeatures.validateOnSave": {
-                                            "markdownDescription": "Enabling this feature will run terraform validate within the folder of the file saved. This comes with some user experience caveats.\n\n- Validation is not run on file open, only once it's saved.\n- When editing a module file, validation is not run due to not knowing which \"rootmodule\" to run validation from (there could be multiple). This creates an awkward workflow where when saving a file in a rootmodule, a diagnostic is raised in a module file. Editing the module file will not clear the diagnostic for the reason mentioned above, it will only clear once a file is saved back in the original \"rootmodule\".",
+                                            "markdownDescription": "Enabling this feature will run terraform validate within the folder of the file saved. This comes with some user experience caveats.\n\n- Validation is not run on file open, only once it's saved.\n\n- When editing a module file, validation is not run due to not knowing which \"rootmodule\" to run validation from (there could be multiple). This creates an awkward workflow where when saving a file in a rootmodule, a diagnostic is raised in a module file. Editing the module file will not clear the diagnostic for the reason mentioned above, it will only clear once a file is saved back in the original \"rootmodule\". We will continue to attempt improve this user experience.",
+                                            "default": false,
+                                            "type": "boolean"
+                                        },
+                                        "experimentalFeatures.prefillRequiredFields": {
+                                            "markdownDescription": "Enables advanced completion for `provider`, `resource`, and `data` blocks where any required fields for that block are pre-filled. All such attributes and blocks are sorted alphabetically to ensure consistent ordering.\n\nWhen disabled (unset or set to `false`), completion only provides the label name.\n\nFor example, when completing the `aws_appmesh_route` resource the `mesh_name`, `name`, `virtual_router_name` attributes and the `spec` block will fill and prompt you for appropriate values.",
                                             "default": false,
                                             "type": "boolean"
                                         },
