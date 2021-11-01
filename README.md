@@ -19,3 +19,5 @@ The Terraform language server operates on the following base scopes:
 ## Configuration
 
 You may edit the default settings by running `Preferences: LSP-terraform Settings` from the _Command Palette_.
+
+Optionally you can view `terraform-ls` settings at Hashicorps [repo](https://github.com/hashicorp/terraform-ls/blob/main/docs/SETTINGS.md)
