@@ -2,19 +2,22 @@
 
 A convenience package to take advantage of the [Terraform Language Server](https://github.com/hashicorp/terraform-ls).
 
-To use this package, you must have:
+## Installation
 
-- The [LSP](https://packagecontrol.io/packages/LSP) package.
-- [Terraform Syntax](https://packagecontrol.io/packages/Terraform)
-- `Optional` [Terraform CLI](https://learn.hashicorp.com/tutorials/terraform/install-cli) installed for `validateOnSave`
+1. Install [LSP](https://packagecontrol.io/packages/LSP), [LSP-terraform](https://packagecontrol.io/packages/LSP-terraform) and [Terraform Syntax](https://packagecontrol.io/packages/Terraform) from Package Control.
+2. Restart Sublime Text.
 
-# Applicable Selectors
+Optionally install the [Terraform CLI](https://learn.hashicorp.com/tutorials/terraform/install-cli) for the `validateOnSave` and formatting functionality.
+
+## Applicable Selectors
 
 The Terraform language server operates on the following base scopes:
 
 - `source.terraform`
 - `source.terraform-vars`
 
-# Configuration
+## Configuration
 
 You may edit the default settings by running `Preferences: LSP-terraform Settings` from the _Command Palette_.
+
+Optionally you can view `terraform-ls` settings at Hashicorps [repo](https://github.com/hashicorp/terraform-ls/blob/main/docs/SETTINGS.md)
