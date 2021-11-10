@@ -6,18 +6,10 @@
   ],
   "selector": "source.terraform | source.terraform-vars",
   "initializationOptions": {
-    // Overrides automatic root module discovery by passing a static list of
-    // absolute or relative paths to root modules.
-    // Conflicts with `excludeModulePaths` option.
     "rootModulePaths": [],
-    // Excludes root module path when automatic root module discovery by passing
-    // a static list of absolute or relative paths to root modules.
-    // Conflicts with `rootModulePaths` option.
     "excludeModulePaths": [],
-    // Runs terraform validate within the folder of the file saved.
     "experimentalFeatures.validateOnSave": false,
-    // Enables advanced completion for `provider`, `resource`, and `data`
-    // blocks where any required fields for that block are pre-filled.
     "experimentalFeatures.prefillRequiredFields": false,
+    "ignoreDirectoryNames": [],
   }
 }

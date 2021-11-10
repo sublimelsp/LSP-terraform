@@ -37,6 +37,14 @@
                                             },
                                             "type": "array"
                                         },
+                                        "ignoreDirectoryNames": {
+                                            "default": [],
+                                            "markdownDescription": "This allows excluding directories from being indexed upon initialization by passing a list of directory names.\n\nThe following list of directories will always be ignored:\n\n- `.git`\n- `.idea`\n- `.vscode`\n- `terraform.tfstate.d`\n- `.terragrunt-cache`",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "type": "array"
+                                        },
                                         "excludeModulePaths": {
                                             "default": [],
                                             "markdownDescription": "This allows exclude root module path when automatic root module discovery by passing a static list of absolute or relative paths to root modules (i.e. folders with `*.tf` files which have been `terraform init`-ed). Conflicts with `rootModulePaths` option.\n\n Relative paths are resolved relative to the directory opened in the editor.\n\n Path separators are converted automatically to the match separators of the target platform (e.g. `\\` on Windows, or `/` on Unix), symlinks are followed, trailing slashes automatically removed, and `~` is replaced with your home directory.",
