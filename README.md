@@ -9,13 +9,6 @@ A convenience package to take advantage of the [Terraform Language Server](https
 
 Optionally install the [Terraform CLI](https://learn.hashicorp.com/tutorials/terraform/install-cli) for the `validateOnSave` and formatting functionality.
 
-## Applicable Selectors
-
-The Terraform language server operates on the following base scopes:
-
-- `source.terraform`
-- `source.terraform-vars`
-
 ## Configuration
 
 You may edit the default settings by running `Preferences: LSP-terraform Settings` from the _Command Palette_.
