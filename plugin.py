@@ -3,7 +3,7 @@
 import sublime
 
 from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
-from LSP.plugin.core.typing import Any, Optional
+from LSP.plugin.core.typing import cast, Any, List, Optional
 
 import os
 import sys
@@ -88,9 +88,12 @@ class Terraform(AbstractPlugin):
 
     @classmethod
     def _is_terraform_ls_installed(cls) -> bool:
-        terraform_ls_binary = get_setting(
-            'command', [os.path.join(cls.basedir(), 'terraform-ls')])
-        return _is_binary_available(terraform_ls_binary[0])
+        return bool(cls._get_terraform_ls_path())
+
+    @classmethod
+    def _get_terraform_ls_path(cls) -> Optional[str]:
+        terraform_ls_binary = cast(List[str], get_setting('command', [os.path.join(cls.basedir(), 'terraform-ls')]))
+        return shutil.which(terraform_ls_binary[0]) if len(terraform_ls_binary) else None
 
     @classmethod
     def needs_update_or_installation(cls) -> bool:
@@ -103,6 +106,10 @@ class Terraform(AbstractPlugin):
 
         if arch() is None:
             raise ValueError('System architecture not detected or supported')
+
+        terraform_ls_path = cls._get_terraform_ls_path()
+        if terraform_ls_path:
+            os.remove(terraform_ls_path)
 
         os.makedirs(cls.basedir(), exist_ok=True)
 
@@ -163,10 +170,6 @@ class Terraform(AbstractPlugin):
 
         with open(os.path.join(cls.basedir(), 'VERSION'), 'w') as fp:
             fp.write(cls.server_version())
-
-
-def _is_binary_available(path) -> bool:
-    return bool(shutil.which(path))
 
 
 def get_setting(key: str, default=None) -> Any:
