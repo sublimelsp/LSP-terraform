@@ -15,7 +15,7 @@ import hashlib
 
 USER_AGENT = 'Sublime Text LSP'
 
-TAG = '0.25.2'
+TAG = '0.26.0'
 
 HASHICORP_RELEASES_BASE = 'https://releases.hashicorp.com/terraform-ls/{tag}/terraform-ls_{tag}_{platform}_{arch}.zip'
 HASHICORP_SHA256_BASE = 'https://releases.hashicorp.com/terraform-ls/{tag}/terraform-ls_{tag}_SHA256SUMS'
