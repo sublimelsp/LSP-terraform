@@ -11,5 +11,6 @@
     "experimentalFeatures.validateOnSave": false,
     "experimentalFeatures.prefillRequiredFields": false,
     "ignoreDirectoryNames": [],
+    "ignoreSingleFileWarning": false,
   }
 }
