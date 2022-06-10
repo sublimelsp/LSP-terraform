@@ -5,6 +5,14 @@
     "serve"
   ],
   "selector": "source.terraform | source.terraform-vars",
+  // File watching functionality only works with "LSP-file-watcher-chokidar" package installed.
+  "file_watcher": {
+    "patterns": [
+      "**/*.tf",
+      "**/*.tfvars"
+    ],
+    "events": ["create", "change", "delete"]
+  },
   "initializationOptions": {
     "rootModulePaths": [],
     "excludeModulePaths": [],
