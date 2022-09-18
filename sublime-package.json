@@ -15,39 +15,54 @@
                                     "type": "object",
                                     "properties": {
                                         "terraformLogFilePath": {
-                                            "markdownDescription": "Path to a file for Terraform executions to be logged into (`TF_LOG_PATH`) with support for variables (e.g. Timestamp, Pid, Ppid) via Go template",
+                                            "deprecationMessage": "Deprecated in favour of `terraform.logFilePath` and is now ignored.",
+                                            "default": "",
+                                            "type": "string"
+                                        },
+                                        "terraform.logFilePath": {
+                                            "markdownDescription": "Path to a file for Terraform executions to be logged into (`TF_LOG_PATH`) with support for variables (e.g. Timestamp, Pid, Ppid) via Go template syntax `{{.VarName}}`.",
                                             "default": "",
                                             "type": "string"
                                         },
                                         "terraformExecTimeout": {
+                                            "deprecationMessage": "Deprecated in favour of `terraform.timeout` and is now ignored.",
+                                            "default": "",
+                                            "type": "string"
+                                        },
+                                        "terraform.timeout": {
                                             "markdownDescription": "Overrides Terraform execution timeout in [`time.ParseDuration`](https://pkg.go.dev/time#ParseDuration) compatible format (e.g. `30s`)",
                                             "default": "",
                                             "type": "string"
                                         },
                                         "terraformExecPath": {
+                                            "deprecationMessage": "Deprecated in favour of `terraform.path` and is now ignored.",
+                                            "default": "",
+                                            "type": "string"
+                                        },
+                                        "terraform.path": {
                                             "markdownDescription": "Path to the Terraform binary.\n\nThis is usually looked up automatically from `$PATH` and should not need to be specified in majority of cases. Use this to override the automatic lookup.",
                                             "default": "",
                                             "type": "string"
                                         },
                                         "rootModulePaths": {
+                                            "deprecationMessage": "Deprecated and is ignored. Users should instead leverage the workspace LSP API and add the folder to a workspace, if they wish it to be indexed.",
                                             "default": [],
-                                            "markdownDescription": "This allows overriding automatic root module discovery by passing a static list of absolute or relative paths to root modules (i.e. folders with `*.tf` files which have been `terraform init`-ed). Conflicts with `excludeModulePaths` option.\n\nRelative paths are resolved relative to the directory opened in the editor.\n\nPath separators are converted automatically to the match separators of the target platform (e.g. `\\` on Windows, or `/` on Unix), symlinks are followed, trailing slashes automatically removed, and `~` is replaced with your home directory.",
                                             "items": {
                                                 "type": "string"
                                             },
                                             "type": "array"
                                         },
                                         "ignoreDirectoryNames": {
+                                            "deprecationMessage": "Deprecated in favour of `indexing.ignoreDirectoryNames` - https://github.com/hashicorp/terraform-ls/blob/v0.29.0/docs/SETTINGS.md#ignoredirectorynames-string.",
                                             "default": [],
-                                            "markdownDescription": "This allows excluding directories from being indexed upon initialization by passing a list of directory names.\n\nThe following list of directories will always be ignored:\n\n- `.git`\n- `.idea`\n- `.vscode`\n- `terraform.tfstate.d`\n- `.terragrunt-cache`",
                                             "items": {
                                                 "type": "string"
                                             },
                                             "type": "array"
                                         },
                                         "excludeModulePaths": {
+                                            "deprecationMessage": "Deprecated in favour of `indexing.ignorePaths` and is now ignored.",
                                             "default": [],
-                                            "markdownDescription": "This allows exclude root module path when automatic root module discovery by passing a static list of absolute or relative paths to root modules (i.e. folders with `*.tf` files which have been `terraform init`-ed). Conflicts with `rootModulePaths` option.\n\n Relative paths are resolved relative to the directory opened in the editor.\n\n Path separators are converted automatically to the match separators of the target platform (e.g. `\\` on Windows, or `/` on Unix), symlinks are followed, trailing slashes automatically removed, and `~` is replaced with your home directory.",
                                             "items": {
                                                 "type": "string"
                                             },
@@ -57,6 +72,22 @@
                                             "default": false,
                                             "markdownDescription": "Controls whether a warning is raised about opening a single Terraform file instead of a Terraform folder.",
                                             "type": "boolean"
+                                        },
+                                        "indexing.ignoreDirectoryNames": {
+                                            "markdownDescription": "Allows excluding directories from being indexed upon initialization by passing a list of directory names. [documentation](https://github.com/hashicorp/terraform-ls/blob/main/docs/SETTINGS.md#ignoredirectorynames-string)",
+                                            "default": [],
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "type": "array"
+                                        },
+                                        "indexing.ignorePaths": {
+                                            "markdownDescription": "Paths to ignore when indexing the workspace on initialization. [documentation](https://github.com/hashicorp/terraform-ls/blob/main/docs/SETTINGS.md#ignorepaths-string)",
+                                            "default": [],
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "type": "array"
                                         },
                                         "experimentalFeatures.validateOnSave": {
                                             "markdownDescription": "Enabling this feature will run terraform validate within the folder of the file saved. This comes with some user experience caveats.\n\n- Validation is not run on file open, only once it's saved.\n\n- When editing a module file, validation is not run due to not knowing which \"rootmodule\" to run validation from (there could be multiple). This creates an awkward workflow where when saving a file in a rootmodule, a diagnostic is raised in a module file. Editing the module file will not clear the diagnostic for the reason mentioned above, it will only clear once a file is saved back in the original \"rootmodule\". We will continue to attempt improve this user experience.",

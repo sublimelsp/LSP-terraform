@@ -1,5 +1,13 @@
 // Packages/User/LSP-terraform.sublime-settings
 {
+  "initializationOptions": {
+    "experimentalFeatures.validateOnSave": false,
+    "experimentalFeatures.prefillRequiredFields": false,
+    "ignoreSingleFileWarning": false,
+    "indexing.ignoreDirectoryNames": [],
+    "indexing.ignorePaths": [],
+    "terraform.logFilePath": "",
+  },
   "command": [
     "${storage_path}/LSP-terraform/terraform-ls",
     "serve"
@@ -13,12 +21,4 @@
     ],
     "events": ["create", "change", "delete"]
   },
-  "initializationOptions": {
-    "rootModulePaths": [],
-    "excludeModulePaths": [],
-    "experimentalFeatures.validateOnSave": false,
-    "experimentalFeatures.prefillRequiredFields": false,
-    "ignoreDirectoryNames": [],
-    "ignoreSingleFileWarning": false,
-  }
 }
