@@ -15,3 +15,15 @@ Optionally install the [Terraform CLI](https://learn.hashicorp.com/tutorials/ter
 You may edit the default settings by running `Preferences: LSP-terraform Settings` from the _Command Palette_.
 
 Optionally you can view `terraform-ls` settings at Hashicorps [repo](https://github.com/hashicorp/terraform-ls/blob/main/docs/SETTINGS.md)
+
+## Formatting
+
+The server supports formatting for the terraform files (equivalent to running `terraform fmt`). You can either trigger it manually from the _Command Palette_ using the `LSP: Format File` command or automatically run it on saving the file. To enable formatting on save, open `Preferences: LSP Settings` from the _Command Palette_ and add or modify the following setting:
+
+```js
+{
+    "lsp_code_actions_on_save": {
+      "source.formatAll.terraform": true,
+    },
+}
+```
