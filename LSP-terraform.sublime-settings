@@ -7,6 +7,7 @@
     "indexing.ignoreDirectoryNames": [],
     "indexing.ignorePaths": [],
     "terraform.logFilePath": "",
+    "validation.enableEnhancedValidation": true,
   },
   "command": [
     "${storage_path}/LSP-terraform/terraform-ls",
@@ -19,6 +20,10 @@
       "**/*.tf",
       "**/*.tfvars"
     ],
-    "events": ["create", "change", "delete"]
+    "events": [
+      "create",
+      "change",
+      "delete"
+    ]
   },
 }
