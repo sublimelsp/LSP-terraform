@@ -99,6 +99,11 @@
                                             "default": false,
                                             "type": "boolean"
                                         },
+                                        "validation.enableEnhancedValidation": {
+                                            "markdownDescription": "Controls whether enhanced validation of Terraform files is enabled",
+                                            "default": true,
+                                            "type": "boolean"
+                                        },
                                     }
                                 },
                                 "additionalProperties": false
