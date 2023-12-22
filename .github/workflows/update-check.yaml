@@ -1,0 +1,64 @@
+name: Check/update to latest terraform-ls version
+
+on:
+  schedule:
+    # Ru every day at 7:15
+    - cron: 15 7 * * *
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Check terraform-ls version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ripgrep
+
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.SUBLIMELSP_APP_ID }}
+          private-key: ${{ secrets.SUBLIMELSP_APP_PRIVATE_KEY }}
+
+      - name: Get latest release of terraform-ls
+        uses: pozetroninc/github-action-get-latest-release@v0.7.0
+        id: latest
+        with:
+          excludes: 'prerelease,draft'
+          repository: 'hashicorp/terraform-ls'
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Get current TAG from main
+        id: latest_no_v
+        run: |
+          TAG_EXCL_V=${{ steps.latest.outputs.release }}
+          TAG_EXCL_V=${TAG_EXCL_V/v/}
+          echo "release=$TAG_EXCL_V" >> "$GITHUB_OUTPUT"
+
+
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Get current TAG from main
+        id: current_release
+        run: |
+          release=$(rg -o 'TAG = "([^"]+)"' -r \$1 "plugin.py")
+          echo "release=$release" >> "$GITHUB_OUTPUT"
+
+      - if: steps.current_release.outputs.release != steps.latest_no_v.outputs.release
+        name: Update current version
+        run: sed -i 's/${{ steps.current_release.outputs.release }}/${{ steps.latest_no_v.outputs.release }}/' plugin.py
+
+      - if: steps.current_release.outputs.release != steps.latest_no_v.outputs.release
+        name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: update terraform-ls to ${{ steps.latest_no_v.outputs.release }}
+          delete-branch: true
+          title: update terraform-ls to ${{ steps.latest_no_v.outputs.release }}
+          body: 'Update terraform-ls server to [${{ steps.latest_no_v.outputs.release }}](https://github.com/hashicorp/terraform-ls/releases/tag/${{ steps.latest.outputs.release }})'
+          token: ${{ steps.app-token.outputs.token }}
