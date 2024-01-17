@@ -32,7 +32,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
 
       - name: Set tag output without leading v
-        id: current
+        id: latest_no_v
         run: |
           TAG_EXCL_V=${{ steps.latest.outputs.release }}
           TAG_EXCL_V=${TAG_EXCL_V/v/}
@@ -58,6 +58,6 @@ jobs:
         with:
           commit-message: update terraform-ls to ${{ steps.latest_no_v.outputs.release }}
           delete-branch: true
-          title: update terraform-ls to ${{ steps.latest_no_v.outputs.release }}
-          body: 'Update `terraform-ls` server from [${{ steps.current.outputs.release }}](https://github.com/hashicorp/terraform-ls/releases/tag/${{ steps.current.outputs.release }}) to [${{ steps.latest_no_v.outputs.release }}](https://github.com/hashicorp/terraform-ls/releases/tag/${{ steps.latest_no_v.outputs.release }}) (see [all changes](https://github.com/hashicorp/terraform-ls/compare/${{ steps.current.outputs.release }}...${{ steps.latest_no_v.outputs.release }})).'
+          title: update terraform-ls to ${{ steps.latest.outputs.release }}
+          body: 'Update `terraform-ls` server from [${{ steps.current.outputs.release }}](https://github.com/hashicorp/terraform-ls/releases/tag/${{ steps.current.outputs.release }}) to [${{ steps.latest.outputs.release }}](https://github.com/hashicorp/terraform-ls/releases/tag/${{ steps.latest.outputs.release }}) (see [all changes](https://github.com/hashicorp/terraform-ls/compare/${{ steps.current.outputs.release }}...${{ steps.latest.outputs.release }})).'
           token: ${{ steps.app-token.outputs.token }}
