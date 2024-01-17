@@ -56,8 +56,8 @@ jobs:
         name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
-          commit-message: update terraform-ls to ${{ steps.latest_no_v.outputs.release }}
+          commit-message: update terraform-ls to ${{ steps.latest.outputs.release }}
           delete-branch: true
           title: update terraform-ls to ${{ steps.latest.outputs.release }}
-          body: 'Update `terraform-ls` server from [${{ steps.current.outputs.release }}](https://github.com/hashicorp/terraform-ls/releases/tag/${{ steps.current.outputs.release }}) to [${{ steps.latest.outputs.release }}](https://github.com/hashicorp/terraform-ls/releases/tag/${{ steps.latest.outputs.release }}) (see [all changes](https://github.com/hashicorp/terraform-ls/compare/${{ steps.current.outputs.release }}...${{ steps.latest.outputs.release }})).'
+          body: 'Update `terraform-ls` server from [v${{ steps.current.outputs.release }}](https://github.com/hashicorp/terraform-ls/releases/tag/v${{ steps.current.outputs.release }}) to [${{ steps.latest.outputs.release }}](https://github.com/hashicorp/terraform-ls/releases/tag/${{ steps.latest.outputs.release }}) (see [all changes](https://github.com/hashicorp/terraform-ls/compare/v${{ steps.current.outputs.release }}...${{ steps.latest.outputs.release }})).'
           token: ${{ steps.app-token.outputs.token }}
