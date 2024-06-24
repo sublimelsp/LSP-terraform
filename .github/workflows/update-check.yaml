@@ -24,7 +24,7 @@ jobs:
           private-key: ${{ secrets.SUBLIMELSP_APP_PRIVATE_KEY }}
 
       - name: Get latest release of terraform-ls
-        uses: pozetroninc/github-action-get-latest-release@v0.7.0
+        uses: pozetroninc/github-action-get-latest-release@v0.8.0
         id: latest
         with:
           excludes: 'prerelease,draft'
