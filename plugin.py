@@ -15,7 +15,7 @@ import hashlib
 
 USER_AGENT = 'Sublime Text LSP'
 
-TAG = '0.36.0'
+TAG = '0.36.2'
 
 # GitHub releases page: https://github.com/hashicorp/terraform-ls/releases
 HASHICORP_RELEASES_BASE = 'https://releases.hashicorp.com/terraform-ls/{tag}/terraform-ls_{tag}_{platform}_{arch}.zip'
