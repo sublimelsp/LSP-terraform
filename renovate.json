@@ -9,11 +9,11 @@
       "managerFilePatterns": [
         "/^plugin\\.py$/"
       ],
-      "datasourceTemplate": "github-releases",
-      "depNameTemplate": "hashicorp/terraform-ls",
       "matchStrings": [
         "TAG = '(?<currentValue>.+?)'"
       ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "hashicorp/terraform-ls",
       "versioningTemplate": "semver"
     }
   ]
