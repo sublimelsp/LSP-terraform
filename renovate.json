@@ -13,7 +13,7 @@
         "TAG = '(?<currentValue>.+?)'"
       ],
       "datasourceTemplate": "github-releases",
-      "depNameTemplate": "hashicorp/terraform-ls",
+      "packageNameTemplate": "hashicorp/terraform-ls",
       "versioningTemplate": "semver"
     }
   ]
