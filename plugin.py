@@ -24,32 +24,23 @@ HASHICORP_FILENAME_BASE = 'terraform-ls_{tag}_{platform}_{arch}.zip'
 
 
 def plat() -> Optional[str]:
-    '''
-    Returns the user friendly platform version that
-    sublime is running on.
-    '''
+    """Return the user friendly platform version that sublime is running on."""
     if sublime.platform() == 'osx':
         return 'darwin'
-    elif sublime.platform() == 'windows':
+    if sublime.platform() == 'windows':
         return 'windows'
-    elif sublime.platform() == 'linux':
+    if sublime.platform() == 'linux':
         if platform.system() == 'Linux':
             return 'linux'
-        elif sys.platform.startswith('freebsd'):
+        if sys.platform.startswith('freebsd'):
             return 'freebsd'
-        elif sys.platform.startswith('openbsd'):
+        if sys.platform.startswith('openbsd'):
             return 'openbsd'
-        else:
-            return None
-    else:
-        return None
+    return None
 
 
 def arch() -> Optional[str]:
-    '''
-    Returns the user friendly architecture version that
-    sublime is running on.
-    '''
+    """Return the user friendly architecture version that sublime is running on."""
     if sublime.arch() == "x32":
         return "386"
     elif sublime.arch() == "x64":
@@ -61,11 +52,7 @@ def arch() -> Optional[str]:
 
 
 class Terraform(AbstractPlugin):
-    '''
-    Terraform is an AbstractPlugin implementation that provides
-    the required functions to act as a helper package for the
-    Terraform Language Server (terraform-ls)
-    '''
+    """AbstractPlugin implementation acts as a helper package for the Terraform Language Server (terraform-ls)."""
 
     @classmethod
     def name(cls) -> str:
@@ -82,7 +69,7 @@ class Terraform(AbstractPlugin):
     @classmethod
     def current_server_version(cls) -> Optional[str]:
         try:
-            with open(os.path.join(cls.basedir(), "VERSION"), "r") as fp:
+            with open(os.path.join(cls.basedir(), "VERSION")) as fp:
                 return fp.read()
         except:
             return None
