@@ -17,5 +17,5 @@
       "packageNameTemplate": "hashicorp/terraform-ls",
       "versioningTemplate": "semver"
     }
-  ],
+  ]
 }
