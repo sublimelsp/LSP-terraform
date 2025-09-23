@@ -1,7 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>sublimelsp/renovate-preset"
+    "github>sublimelsp/renovate-preset",
+    ":semanticCommitTypeAll(fix)"
   ],
   "customManagers": [
     {
@@ -16,5 +17,5 @@
       "packageNameTemplate": "hashicorp/terraform-ls",
       "versioningTemplate": "semver"
     }
-  ]
+  ],
 }
