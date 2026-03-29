@@ -1,6 +1,6 @@
 // Packages/User/LSP-terraform.sublime-settings
 {
-  "initializationOptions": {
+  "initialization_options": {
     "experimentalFeatures.validateOnSave": false,
     "experimentalFeatures.prefillRequiredFields": false,
     "ignoreSingleFileWarning": false,
