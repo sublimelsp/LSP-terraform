@@ -1,17 +1,18 @@
 # Packages/LSP-terraform/plugin.py
 
-import sublime
+from __future__ import annotations
 
-from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
-from LSP.plugin.core.typing import cast, Any, List, Optional
-
-import os
-import sys
-import shutil
-import zipfile
-import urllib.request
-import platform
 import hashlib
+import os
+import platform
+import shutil
+import sys
+import urllib.request
+import zipfile
+from typing import Any, cast
+
+import sublime
+from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
 
 USER_AGENT = 'Sublime Text LSP'
 
@@ -23,7 +24,7 @@ HASHICORP_SHA256_BASE = 'https://releases.hashicorp.com/terraform-ls/{tag}/terra
 HASHICORP_FILENAME_BASE = 'terraform-ls_{tag}_{platform}_{arch}.zip'
 
 
-def plat() -> Optional[str]:
+def plat() -> str | None:
     """Return the user friendly platform version that sublime is running on."""
     if sublime.platform() == 'osx':
         return 'darwin'
@@ -39,7 +40,7 @@ def plat() -> Optional[str]:
     return None
 
 
-def arch() -> Optional[str]:
+def arch() -> str | None:
     """Return the user friendly architecture version that sublime is running on."""
     if sublime.arch() == "x32":
         return "386"
@@ -67,7 +68,7 @@ class Terraform(AbstractPlugin):
         return TAG
 
     @classmethod
-    def current_server_version(cls) -> Optional[str]:
+    def current_server_version(cls) -> str | None:
         try:
             with open(os.path.join(cls.basedir(), "VERSION")) as fp:
                 return fp.read()
@@ -79,8 +80,8 @@ class Terraform(AbstractPlugin):
         return bool(cls._get_terraform_ls_path())
 
     @classmethod
-    def _get_terraform_ls_path(cls) -> Optional[str]:
-        terraform_ls_binary = cast(List[str], get_setting('command', [os.path.join(cls.basedir(), 'terraform-ls')]))
+    def _get_terraform_ls_path(cls) -> str | None:
+        terraform_ls_binary = cast('list[str]', get_setting('command', [os.path.join(cls.basedir(), 'terraform-ls')]))
         return shutil.which(terraform_ls_binary[0]) if len(terraform_ls_binary) else None
 
     @classmethod
