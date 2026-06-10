@@ -16,7 +16,7 @@ from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
 
 USER_AGENT = 'Sublime Text LSP'
 
-TAG = '0.38.6'
+TAG = '0.38.7'
 
 # GitHub releases page: https://github.com/hashicorp/terraform-ls/releases
 HASHICORP_RELEASES_BASE = 'https://releases.hashicorp.com/terraform-ls/{tag}/terraform-ls_{tag}_{platform}_{arch}.zip'
