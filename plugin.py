@@ -12,7 +12,7 @@ import zipfile
 from typing import Any, cast
 
 import sublime
-from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
+from LSP.plugin import LspPlugin, OnPreStartContext
 
 USER_AGENT = 'Sublime Text LSP'
 
@@ -52,16 +52,17 @@ def arch() -> str | None:
         return None
 
 
-class Terraform(AbstractPlugin):
-    """AbstractPlugin implementation acts as a helper package for the Terraform Language Server (terraform-ls)."""
+class Terraform(LspPlugin):
+    """LspPlugin implementation acts as a helper package for the Terraform Language Server (terraform-ls)."""
 
     @classmethod
-    def name(cls) -> str:
-        return "terraform"
+    def on_pre_start_async(cls, context: OnPreStartContext) -> None:
+        if cls.needs_update_or_installation():
+            cls.install_or_update()
 
     @classmethod
     def basedir(cls) -> str:
-        return os.path.join(cls.storage_path(), str(__package__))
+        return str(cls.plugin_storage_path)
 
     @classmethod
     def server_version(cls) -> str:
@@ -168,8 +169,8 @@ def get_setting(key: str, default=None) -> Any:
 
 
 def plugin_loaded():
-    register_plugin(Terraform)
+    Terraform.register()
 
 
 def plugin_unloaded():
-    unregister_plugin(Terraform)
+    Terraform.unregister()
