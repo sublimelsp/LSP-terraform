@@ -9,10 +9,10 @@ import shutil
 import sys
 import urllib.request
 import zipfile
-from typing import Any, cast
+from typing import cast
 
 import sublime
-from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
+from LSP.plugin import ClientConfig, LspPlugin, OnPreStartContext
 
 USER_AGENT = 'Sublime Text LSP'
 
@@ -52,16 +52,18 @@ def arch() -> str | None:
         return None
 
 
-class Terraform(AbstractPlugin):
-    """AbstractPlugin implementation acts as a helper package for the Terraform Language Server (terraform-ls)."""
+class Terraform(LspPlugin):
+    """LspPlugin implementation acts as a helper package for the Terraform Language Server (terraform-ls)."""
 
     @classmethod
-    def name(cls) -> str:
-        return "terraform"
+    def on_pre_start_async(cls, context: OnPreStartContext) -> None:
+        configuration = context.configuration
+        if cls.needs_update_or_installation(configuration):
+            cls.install_or_update(configuration)
 
     @classmethod
-    def basedir(cls) -> str:
-        return os.path.join(cls.storage_path(), str(__package__))
+    def storage_path(cls) -> str:
+        return str(cls.plugin_storage_path)
 
     @classmethod
     def server_version(cls) -> str:
@@ -70,45 +72,49 @@ class Terraform(AbstractPlugin):
     @classmethod
     def current_server_version(cls) -> str | None:
         try:
-            with open(os.path.join(cls.basedir(), "VERSION")) as fp:
+            with open(os.path.join(cls.storage_path(), "VERSION")) as fp:
                 return fp.read()
         except:
             return None
 
     @classmethod
-    def _is_terraform_ls_installed(cls) -> bool:
-        return bool(cls._get_terraform_ls_path())
+    def _is_terraform_ls_installed(cls, configuration: ClientConfig) -> bool:
+        return bool(cls._get_terraform_ls_path(configuration))
 
     @classmethod
-    def _get_terraform_ls_path(cls) -> str | None:
-        terraform_ls_binary = cast('list[str]', get_setting('command', [os.path.join(cls.basedir(), 'terraform-ls')]))
+    def _get_terraform_ls_path(cls, configuration: ClientConfig) -> str | None:
+        terraform_ls_binary = cast(
+            'list[str]', configuration.settings.get('command', [os.path.join(cls.storage_path(), 'terraform-ls')])
+        )
         return shutil.which(terraform_ls_binary[0]) if len(terraform_ls_binary) else None
 
     @classmethod
-    def needs_update_or_installation(cls) -> bool:
-        return not cls._is_terraform_ls_installed() or (cls.current_server_version() != cls.server_version())
+    def needs_update_or_installation(cls, configuration: ClientConfig) -> bool:
+        return not cls._is_terraform_ls_installed(configuration) or (
+            cls.current_server_version() != cls.server_version()
+        )
 
     @classmethod
-    def install_or_update(cls) -> None:
+    def install_or_update(cls, configuration: ClientConfig) -> None:
         if plat() is None:
             raise ValueError('System platform not detected or supported')
 
         if arch() is None:
             raise ValueError('System architecture not detected or supported')
 
-        terraform_ls_path = cls._get_terraform_ls_path()
+        terraform_ls_path = cls._get_terraform_ls_path(configuration)
         if terraform_ls_path:
             os.remove(terraform_ls_path)
 
-        os.makedirs(cls.basedir(), exist_ok=True)
+        os.makedirs(cls.storage_path(), exist_ok=True)
 
         zip_url = HASHICORP_RELEASES_BASE.format(
             tag=cls.server_version(), arch=arch(), platform=plat())
-        zip_file = os.path.join(cls.basedir(), HASHICORP_FILENAME_BASE.format(
+        zip_file = os.path.join(cls.storage_path(), HASHICORP_FILENAME_BASE.format(
             tag=cls.server_version(), platform=plat(), arch=arch()))
         sha_url = HASHICORP_SHA256_BASE.format(tag=cls.server_version())
 
-        sha_file = os.path.join(cls.basedir(), 'terraform-ls.sha')
+        sha_file = os.path.join(cls.storage_path(), 'terraform-ls.sha')
 
         req = urllib.request.Request(
             zip_url,
@@ -149,27 +155,21 @@ class Terraform(AbstractPlugin):
                 break
 
         with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-            zip_ref.extractall(cls.basedir())
+            zip_ref.extractall(cls.storage_path())
 
         os.remove(zip_file)
         os.remove(sha_file)
 
         terraform_ls = 'terraform-ls' if plat() != 'windows' else 'terraform-ls.exe'
-        os.chmod(os.path.join(cls.basedir(), terraform_ls), 0o700)
+        os.chmod(os.path.join(cls.storage_path(), terraform_ls), 0o700)
 
-        with open(os.path.join(cls.basedir(), 'VERSION'), 'w') as fp:
+        with open(os.path.join(cls.storage_path(), 'VERSION'), 'w') as fp:
             fp.write(cls.server_version())
 
 
-def get_setting(key: str, default=None) -> Any:
-    settings = sublime.load_settings(
-        'LSP-terraform.sublime-settings').get("settings", {})
-    return settings.get(key, default)
-
-
 def plugin_loaded():
-    register_plugin(Terraform)
+    Terraform.register()
 
 
 def plugin_unloaded():
-    unregister_plugin(Terraform)
+    Terraform.unregister()

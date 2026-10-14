@@ -130,7 +130,7 @@
                             "properties": {
                                 "LSP": {
                                     "properties": {
-                                        "terraform": {
+                                        "LSP-terraform": {
                                             "$ref": "sublime://settings/LSP-terraform#/definitions/PluginConfig"
                                         }
                                     }
