@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/sublimelsp/lsp_smoke_test/v1/smoke.schema.json
+file: main.tf
+# The session name until the package is migrated to LspPlugin.
+server: terraform
+# The block is not closed.
+expected_diagnostics:
+  severity: 1
