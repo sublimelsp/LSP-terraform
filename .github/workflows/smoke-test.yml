@@ -12,4 +12,4 @@ jobs:
     uses: sublimelsp/lsp_smoke_test/.github/workflows/smoke-test.yml@v1
     with:
       # Provides the Terraform syntax that the server is enabled for.
-      extra-packages: SublimeText/Terraform@4180-2.0.3
+      extra-packages: Terraform
